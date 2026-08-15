@@ -99,3 +99,58 @@ renderStore();if(location.hash==='#admin')openAdmin();
 </script>
 </body>
 </html>
+</html>
+</html><!-- Firebase SDK & Firestore Integration -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDxxOB3FTRf01tg9fL2aAHLZ7YDz3TUFeg",
+    authDomain: "didibhuli-fabrics.firebaseapp.com",
+    projectId: "didibhuli-fabrics",
+    storageBucket: "didibhuli-fabrics.firebasestorage.app",
+    messagingSenderId: "184293608042",
+    appId: "1:184293608042:web:d6b2a3e9f90cee3b295813",
+    measurementId: "G-22TT85ZW6D"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function loadProducts() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "products"));
+      const productContainer = document.getElementById("product-grid") || document.querySelector(".products-grid") || document.querySelector(".product-container");
+
+      if (productContainer && !querySnapshot.empty) {
+        productContainer.innerHTML = ""; // Clear placeholders
+
+        querySnapshot.forEach((doc) => {
+          const product = doc.data();
+          const card = document.createElement("div");
+          card.className = "product-card";
+          card.innerHTML = `
+            <div class="product-image-box">
+              <img src="${product.image || 'brand-info.png'}" alt="${product.name}">
+            </div>
+            <div class="product-details" style="padding: 1rem; text-align: center;">
+              <span style="font-size: 0.8rem; text-transform: uppercase; color: #8C6239;">${product.category || 'Collection'}</span>
+              <h3 style="font-family: 'Cormorant Garamond', serif; margin: 0.5rem 0; font-size: 1.4rem;">${product.name}</h3>
+              <p style="color: #4A0E17; font-weight: bold; font-size: 1.1rem; margin-bottom: 0.5rem;">₹${product.price}</p>
+              <p style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">${product.description || ''}</p>
+              <button style="background-color: #4A0E17; color: #FAF7F2; border: none; padding: 8px 16px; cursor: pointer; border-radius: 4px; font-weight: 500;">
+                ${product.available ? 'Enquire Now' : 'Out of Stock'}
+              </button>
+            </div>
+          `;
+          productContainer.appendChild(card);
+        });
+      }
+    } catch (error) {
+      console.error("Error loading products:", error);
+    }
+  }
+
+  window.addEventListener("DOMContentLoaded", loadProducts);
+</script>
