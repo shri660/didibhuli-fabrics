@@ -34,7 +34,7 @@
 <header class="header">
   <a class="brand" href="#home"><img src="logo.png" alt="DBFH logo"><div class="brand-text"><strong>DIDI BHULI</strong><span>Fabric House</span></div></a>
   <nav class="nav"><a href="#shop">Kurtis</a><a href="#new">New Arrivals</a><a href="#story">Our Story</a><a href="#contact">Contact</a><a href="#admin" onclick="openAdmin()">Admin</a></nav>
-  <div class="actions"><button class="icon-btn" onclick="openCart()">Bag (<span id="cartCount">0</span>)</button></div>
+  <div class="actions"></div>
 </header>
 
 <section id="home" class="hero view active">
@@ -54,8 +54,8 @@
 
 <footer class="footer"><div class="footer-grid"><div><div class="kicker">Didi Bhuli Fabric House</div><h2>Timeless tradition.<br>Modern grace.</h2><p>Premium-looking traditional women's fashion with a modern shopping experience. Demo store for the upcoming real e-commerce website.</p></div><div class="footlinks"><div><h4>Shop</h4><a href="#shop">Kurtis</a><a href="#new">New Arrivals</a></div><div><h4>Business</h4><a onclick="openAdmin()">Owner Dashboard</a><a href="#contact">Contact</a></div></div></div><div class="copy">© 2026 Didi Bhuli Fabric House · Demo build · didibhulifabrics.com</div></footer>
 
-<div class="overlay" id="overlay" onclick="closeDrawers()"></div>
-<aside class="drawer" id="cartDrawer"><div class="drawer-head"><h2>Shopping bag</h2><button class="icon-btn" onclick="closeDrawers()">Close</button></div><div id="cartItems"></div><div id="cartSummary"></div></aside>
+
+
 
 <section id="admin" class="view">
 <div class="admin-wrap">
@@ -65,15 +65,15 @@
 </section>
 
 <script>
-// Catalog card generator — Direct enquiry instead of checkout
+// Catalog Card Generator with Direct WhatsApp Enquiry
 function card(p) {
-  const waMsg = encodeURIComponent(`Hello Didi Bhuli Fabric House, I am interested in knowing more about: ${p.name} (Price: ₹${p.price}).`);
+  const waMsg = encodeURIComponent(`Hello Didi Bhuli Fabric House, I am interested in this design: ${p.name} (Price: ₹${p.price}).`);
   const waLink = `https://wa.me/919170174759?text=${waMsg}`;
 
   return `
-    <article class="card" style="background:#fff; border:1px solid #E6DEC8; border-radius:6px; overflow:hidden; display:flex; flex-direction:column;">
+    <article class="card" style="background:#fff; border:1px solid #E6DEC8; border-radius:6px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
       <div class="card-img" style="background-image:url('${p.img || 'brand-info.png'}'); height:280px; background-size:cover; background-position:center; position:relative;">
-        <span class="badge" style="position:absolute; top:12px; left:12px; background:#4A0E17; color:#FAF7F2; padding:4px 8px; font-size:11px; text-transform:uppercase; letter-spacing:1px; border-radius:3px;">${p.cat || 'Collection'}</span>
+        <span class="badge" style="position:absolute; top:12px; left:12px; background:#4A0E17; color:#FAF7F2; padding:4px 8px; font-size:11px; text-transform:uppercase; letter-spacing:1px; border-radius:3px;">${p.cat || 'Showcase'}</span>
       </div>
       <div style="padding:16px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
@@ -83,8 +83,8 @@ function card(p) {
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid #F0EAE1;">
           <span style="font-size:18px; font-weight:bold; color:#4A0E17;">₹${Number(p.price).toLocaleString('en-IN')}</span>
-          <a href="${waLink}" target="_blank" style="background:#25D366; color:#fff; text-decoration:none; padding:8px 14px; border-radius:4px; font-size:12px; font-weight:bold; letter-spacing:0.5px; display:inline-flex; align-items:center; gap:6px;">
-            Enquire on WhatsApp
+          <a href="${waLink}" target="_blank" style="background:#25D366; color:#fff; text-decoration:none; padding:8px 14px; border-radius:4px; font-size:12px; font-weight:bold; letter-spacing:0.5px;">
+            Enquire Now
           </a>
         </div>
       </div>
@@ -93,7 +93,7 @@ function card(p) {
 }
 </script>
 
-<!-- Firebase SDK & Live Showcase Integration -->
+<!-- Firebase SDK & Direct Showcase Integration -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -111,11 +111,6 @@ function card(p) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Hide the Cart / Bag icon in the header
-  const bagBtn = document.querySelector('button[onclick*="openCart"]') || document.querySelector('.bag-btn');
-  if (bagBtn) bagBtn.style.display = 'none';
-
-  // 1. Fetch & Render Live Showcase Catalog
   async function loadFirestoreProducts() {
     try {
       const querySnapshot = await getDocs(collection(db, "products"));
@@ -148,11 +143,10 @@ function card(p) {
         }
       }
     } catch (err) {
-      console.error("Firestore showcase error:", err);
+      console.error("Firestore loading error:", err);
     }
   }
 
-  // 2. Direct Admin Showcase Management
   window.handleAddNewProduct = async (e) => {
     e.preventDefault();
     const name = document.getElementById('new-pname').value;
@@ -170,7 +164,7 @@ function card(p) {
         description,
         available: true
       });
-      alert("Item added to catalog showcase!");
+      alert("Design added to showcase!");
       document.getElementById('new-pname').value = '';
       document.getElementById('new-pprice').value = '';
       document.getElementById('new-pdesc').value = '';
@@ -202,7 +196,7 @@ function card(p) {
   }
 
   window.handleDeleteProduct = async (id) => {
-    if (confirm("Remove this design from the showcase?")) {
+    if (confirm("Delete this item from showcase?")) {
       await deleteDoc(doc(db, "products", id));
       alert("Item removed!");
       loadFirestoreProducts();
@@ -226,8 +220,8 @@ function card(p) {
       adminMain.innerHTML = `
         <div style="padding:32px 20px; max-width:850px; margin:40px auto; background:#FAF7F2; border-radius:8px; border:1px solid #E6DEC8; box-shadow:0 4px 20px rgba(0,0,0,0.06);">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #E6DEC8; padding-bottom:16px; margin-bottom:24px;">
-            <h2 style="font-family:'Cormorant Garamond',serif; color:#4A0E17; font-size:28px; margin:0;">Catalog Admin — Showcase Items</h2>
-            <a href="#" onclick="showHomeView(); return false;" style="background:#4A0E17; color:#FAF7F2; padding:8px 16px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:14px;">← Back to Catalog</a>
+            <h2 style="font-family:'Cormorant Garamond',serif; color:#4A0E17; font-size:28px; margin:0;">Showcase Admin — Manage Items</h2>
+            <a href="#" onclick="showHomeView(); return false;" style="background:#4A0E17; color:#FAF7F2; padding:8px 16px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:14px;">← Back to Store</a>
           </div>
 
           <form onsubmit="handleAddNewProduct(event)" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
@@ -235,11 +229,11 @@ function card(p) {
             <input type="number" id="new-pprice" placeholder="Display Price in ₹ (e.g. 1999)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
             <input type="text" id="new-pcat" placeholder="Category (e.g. Sarees, Kurtis)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
             <input type="text" id="new-pimg" placeholder="Image URL / filename (default: brand-info.png)" style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
-            <textarea id="new-pdesc" placeholder="Fabric details, fit, and handcrafted notes..." style="grid-column:1/-1; padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; min-height:80px;"></textarea>
-            <button type="submit" style="grid-column:1/-1; background:#4A0E17; color:#FAF7F2; padding:14px; border:none; border-radius:4px; font-weight:bold; font-size:15px; cursor:pointer;">Add Item to Showcase</button>
+            <textarea id="new-pdesc" placeholder="Fabric, work, styling details..." style="grid-column:1/-1; padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; min-height:80px;"></textarea>
+            <button type="submit" style="grid-column:1/-1; background:#4A0E17; color:#FAF7F2; padding:14px; border:none; border-radius:4px; font-weight:bold; font-size:15px; cursor:pointer;">Publish Item</button>
           </form>
 
-          <h3 style="margin-top:36px; color:#4A0E17; font-family:'Cormorant Garamond',serif; font-size:22px;">Current Showcase Catalog</h3>
+          <h3 style="margin-top:36px; color:#4A0E17; font-family:'Cormorant Garamond',serif; font-size:22px;">Current Showcase Items</h3>
           <table style="width:100%; border-collapse:collapse; margin-top:12px; text-align:left; background:#fff; border-radius:6px; overflow:hidden;">
             <thead>
               <tr style="background:#EBE3D5; color:#4A0E17;">
@@ -278,204 +272,6 @@ function card(p) {
     window.scrollTo(0, 0);
   };
 
-  function checkRoute() {
-    if (window.location.hash === '#admin') {
-      showAdminView();
-    } else {
-      window.showHomeView();
-    }
-  }
-
-  window.addEventListener('hashchange', checkRoute);
-  loadFirestoreProducts();
-  checkRoute();
-</script>
-</body>
-</html>
-<!-- Firebase SDK & Live Firestore Integration -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDxxOB3FTRf01tg9fL2aAHLZ7YDz3TUFeg",
-    authDomain: "didibhuli-fabrics.firebaseapp.com",
-    projectId: "didibhuli-fabrics",
-    storageBucket: "didibhuli-fabrics.firebasestorage.app",
-    messagingSenderId: "184293608042",
-    appId: "1:184293608042:web:d6b2a3e9f90cee3b295813",
-    measurementId: "G-22TT85ZW6D"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // 1. Fetch & Render Live Products on Storefront
-  async function loadFirestoreProducts() {
-    try {
-      const querySnapshot = await getDocs(collection(db, "products"));
-      if (!querySnapshot.empty) {
-        const firestoreList = [];
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
-          firestoreList.push({
-            id: docSnap.id,
-            name: data.name || "Untitled",
-            price: Number(data.price) || 0,
-            cat: data.category || "Kurtis",
-            fabric: data.fabric || "Traditional",
-            work: data.work || "Handcrafted",
-            color: data.color || "Maroon",
-            size: data.size || "S · M · L · XL",
-            img: data.img || data.image || "brand-info.png",
-            tag: data.available ? "In Stock" : "Sold Out",
-            description: data.description || ""
-          });
-        });
-
-        const prodContainer = document.getElementById("products");
-        const featContainer = document.getElementById("featured");
-
-        if (prodContainer) {
-          prodContainer.innerHTML = firestoreList.map((p, i) => card(p, i)).join("");
-        }
-        if (featContainer) {
-          featContainer.innerHTML = firestoreList.slice(0, 4).map((p, i) => card(p, i)).join("");
-        }
-      }
-    } catch (err) {
-      console.error("Firestore loading error:", err);
-    }
-  }
-
-  // 2. Direct Admin Manager Form Handling
-  window.handleAddNewProduct = async (e) => {
-    e.preventDefault();
-    const name = document.getElementById('new-pname').value;
-    const price = Number(document.getElementById('new-pprice').value);
-    const category = document.getElementById('new-pcat').value;
-    const img = document.getElementById('new-pimg').value || 'brand-info.png';
-    const description = document.getElementById('new-pdesc').value;
-
-    try {
-      await addDoc(collection(db, "products"), {
-        name,
-        price,
-        category,
-        image: img,
-        description,
-        available: true
-      });
-      alert("Product published successfully!");
-      document.getElementById('new-pname').value = '';
-      document.getElementById('new-pprice').value = '';
-      document.getElementById('new-pdesc').value = '';
-      loadFirestoreProducts();
-      renderAdminProductList();
-    } catch (err) {
-      alert("Error adding product: " + err.message);
-    }
-  };
-
-  async function renderAdminProductList() {
-    const listContainer = document.getElementById('admin-product-table-body');
-    if (!listContainer) return;
-    const snap = await getDocs(collection(db, "products"));
-    listContainer.innerHTML = "";
-    snap.forEach((d) => {
-      const p = d.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td style="padding:10px; border-bottom:1px solid #E6DEC8; font-weight:500;">${p.name}</td>
-        <td style="padding:10px; border-bottom:1px solid #E6DEC8; color:#4A0E17; font-weight:bold;">₹${p.price}</td>
-        <td style="padding:10px; border-bottom:1px solid #E6DEC8;">${p.category || 'General'}</td>
-        <td style="padding:10px; border-bottom:1px solid #E6DEC8;">
-          <button onclick="handleDeleteProduct('${d.id}')" style="background:#8C1D2F; color:#fff; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; font-weight:bold;">Delete</button>
-        </td>
-      `;
-      listContainer.appendChild(row);
-    });
-  }
-
-  window.handleDeleteProduct = async (id) => {
-    if (confirm("Are you sure you want to delete this product?")) {
-      await deleteDoc(doc(db, "products", id));
-      alert("Product deleted!");
-      loadFirestoreProducts();
-      renderAdminProductList();
-    }
-  };
-
-  function showAdminView() {
-    // Make admin view visible and hide home views
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    const adminSec = document.getElementById('admin');
-    if (adminSec) {
-      adminSec.classList.add('active');
-      adminSec.style.display = 'block';
-    }
-
-    const homeSec = document.getElementById('home');
-    if (homeSec) homeSec.style.display = 'none';
-
-    const adminMain = document.querySelector('.admin-wrap') || adminSec;
-    if (adminMain) {
-      adminMain.innerHTML = `
-        <div style="padding:32px 20px; max-width:850px; margin:40px auto; background:#FAF7F2; border-radius:8px; border:1px solid #E6DEC8; box-shadow:0 4px 20px rgba(0,0,0,0.06);">
-          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #E6DEC8; padding-bottom:16px; margin-bottom:24px;">
-            <h2 style="font-family:'Cormorant Garamond',serif; color:#4A0E17; font-size:28px; margin:0;">Admin — Manage Products</h2>
-            <a href="#" onclick="showHomeView(); return false;" style="background:#4A0E17; color:#FAF7F2; padding:8px 16px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:14px;">← Back to Store</a>
-          </div>
-
-          <form onsubmit="handleAddNewProduct(event)" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <input type="text" id="new-pname" placeholder="Product Name (e.g. Silk Zari Saree)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
-            <input type="number" id="new-pprice" placeholder="Price in ₹ (e.g. 1999)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
-            <input type="text" id="new-pcat" placeholder="Category (e.g. Sarees, Kurtis)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
-            <input type="text" id="new-pimg" placeholder="Image filename / URL (default: brand-info.png)" style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
-            <textarea id="new-pdesc" placeholder="Product Description..." style="grid-column:1/-1; padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; min-height:80px;"></textarea>
-            <button type="submit" style="grid-column:1/-1; background:#4A0E17; color:#FAF7F2; padding:14px; border:none; border-radius:4px; font-weight:bold; font-size:15px; cursor:pointer;">Publish Product Directly</button>
-          </form>
-
-          <h3 style="margin-top:36px; color:#4A0E17; font-family:'Cormorant Garamond',serif; font-size:22px;">Current Store Products</h3>
-          <table style="width:100%; border-collapse:collapse; margin-top:12px; text-align:left; background:#fff; border-radius:6px; overflow:hidden;">
-            <thead>
-              <tr style="background:#EBE3D5; color:#4A0E17;">
-                <th style="padding:12px;">Name</th>
-                <th style="padding:12px;">Price</th>
-                <th style="padding:12px;">Category</th>
-                <th style="padding:12px;">Action</th>
-              </tr>
-            </thead>
-            <tbody id="admin-product-table-body"></tbody>
-          </table>
-        </div>
-      `;
-      renderAdminProductList();
-    }
-  }
-
-  window.showHomeView = function() {
-    const adminSec = document.getElementById('admin');
-    if (adminSec) {
-      adminSec.classList.remove('active');
-      adminSec.style.display = 'none';
-    }
-    const homeSec = document.getElementById('home');
-    if (homeSec) {
-      homeSec.classList.add('active');
-      homeSec.style.display = 'block';
-    }
-    window.location.hash = '';
-    window.scrollTo(0, 0);
-  };
-
-  window.openAdmin = function() {
-    window.location.hash = 'admin';
-    showAdminView();
-    window.scrollTo(0, 0);
-  };
-
-  // Route Handling
   function checkRoute() {
     if (window.location.hash === '#admin') {
       showAdminView();
