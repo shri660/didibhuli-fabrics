@@ -99,3 +99,63 @@ renderStore();if(location.hash==='#admin')openAdmin();
 </script>
 </body>
 </html>
+<!-- Firebase SDK & Live Firestore Integration -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDxxOB3FTRf01tg9fL2aAHLZ7YDz3TUFeg",
+    authDomain: "didibhuli-fabrics.firebaseapp.com",
+    projectId: "didibhuli-fabrics",
+    storageBucket: "didibhuli-fabrics.firebasestorage.app",
+    messagingSenderId: "184293608042",
+    appId: "1:184293608042:web:d6b2a3e9f90cee3b295813",
+    measurementId: "G-22TT85ZW6D"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  async function loadFirestoreProducts() {
+    try {
+      const querySnapshot = await getDocs(collection(db, "products"));
+      if (!querySnapshot.empty) {
+        const firestoreList = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          firestoreList.push({
+            name: data.name || "Untitled",
+            price: Number(data.price) || 0,
+            cat: data.category || "Kurtis",
+            fabric: data.fabric || "Traditional",
+            work: data.work || "Handcrafted",
+            color: data.color || "Maroon",
+            size: data.size || "S · M · L · XL",
+            img: data.img || data.image || "brand-info.png",
+            tag: data.available ? "In Stock" : "Sold Out",
+            description: data.description || ""
+          });
+        });
+
+        // Update the website grid using your existing luxury card design
+        const prodContainer = document.getElementById("products");
+        const featContainer = document.getElementById("featured");
+
+        if (prodContainer) {
+          prodContainer.innerHTML = firestoreList.map((p, i) => card(p, i)).join("");
+        }
+        if (featContainer) {
+          featContainer.innerHTML = firestoreList.slice(0, 4).map((p, i) => card(p, i)).join("");
+        }
+      }
+    } catch (err) {
+      console.error("Firestore loading error:", err);
+    }
+  }
+
+  // Load live products immediately
+  loadFirestoreProducts();
+</script>
+</body>
+</html>
