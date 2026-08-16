@@ -33,7 +33,7 @@
 <div class="top">Free delivery on selected orders · Rajawala, Dehradun · Pan-India traditional wear</div>
 <header class="header">
   <a class="brand" href="#home"><img src="logo.png" alt="DBFH logo"><div class="brand-text"><strong>DIDI BHULI</strong><span>Fabric House</span></div></a>
-  <nav class="nav"><a href="#shop">Kurtis</a><a href="#new">New Arrivals</a><a href="#story">Our Story</a><a href="#contact">Contact</a><a href="#admin" onclick="window.openAdmin(); return false;">Admin</a>
+<a href="#admin" onclick="window.openAdmin ? window.openAdmin() : (window.location.hash='#admin'); return false;">Admin</a>
   <div class="actions"></div>
 </header>
 
@@ -402,17 +402,20 @@ function card(p) {
     }
   };
 
-  // 6. View Routing
-  function showAdminView() {
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  // 6. View Routing & Admin Switch
+  window.showAdminView = function() {
     const adminSec = document.getElementById('admin');
     if (adminSec) {
-      adminSec.classList.add('active');
       adminSec.style.display = 'block';
+      adminSec.classList.add('active');
     }
 
+    // Hide storefront sections while in admin
     const homeSec = document.getElementById('home');
     if (homeSec) homeSec.style.display = 'none';
+    document.querySelectorAll('.section, .banner, .story, #contact').forEach(s => {
+      s.style.display = 'none';
+    });
 
     const adminMain = document.querySelector('.admin-wrap') || adminSec;
     if (adminMain) {
@@ -455,32 +458,36 @@ function card(p) {
       renderAdminProductList();
       renderSelectedImagePreviews();
     }
-  }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   window.showHomeView = function() {
+    window.location.hash = '';
     const adminSec = document.getElementById('admin');
     if (adminSec) {
-      adminSec.classList.remove('active');
       adminSec.style.display = 'none';
+      adminSec.classList.remove('active');
     }
+
+    // Restore all storefront sections
     const homeSec = document.getElementById('home');
-    if (homeSec) {
-      homeSec.classList.add('active');
-      homeSec.style.display = 'block';
-    }
-    window.location.hash = '';
+    if (homeSec) homeSec.style.display = 'block';
+    document.querySelectorAll('.section, .banner, .story, #contact').forEach(s => {
+      s.style.display = 'block';
+    });
+
     loadFirestoreProducts();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   window.openAdmin = function() {
-    window.location.hash = 'admin';
-    showAdminView();
-    window.scrollTo(0, 0);
+    window.location.hash = '#admin';
+    window.showAdminView();
   };
 
   function checkRoute() {
     if (window.location.hash === '#admin') {
-      showAdminView();
+      window.showAdminView();
     } else {
       window.showHomeView();
     }
