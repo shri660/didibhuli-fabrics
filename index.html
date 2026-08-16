@@ -144,8 +144,6 @@ function card(p, idx) {
     </article>
   `;
 }
-</script>
-
 <!-- Firebase SDK & Multi-Photo Showcase Integration -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -166,7 +164,6 @@ function card(p, idx) {
 
   let selectedImages = [];
 
-  // Compression helper so multiple HD photos comfortably fit in Firestore
   function compressImage(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve) => {
       const reader = new FileReader();
@@ -192,31 +189,42 @@ function card(p, idx) {
     });
   }
 
-  // Handle Multi-file Upload (Select up to 7+ photos at once)
+  // Add photos one by one or in batches without overwriting
   window.handleMultiImageUpload = async function(event) {
     const files = Array.from(event.target.files);
     if (!files.length) return;
-
-    selectedImages = [];
-    const previewContainer = document.getElementById('image-previews-list');
-    if (previewContainer) {
-      previewContainer.innerHTML = '<span style="font-size:12px; color:#666;">Optimizing photos...</span>';
-    }
 
     for (const file of files) {
       const compressed = await compressImage(file);
       selectedImages.push(compressed);
     }
 
-    if (previewContainer) {
-      previewContainer.innerHTML = selectedImages.map((src, i) => `
-        <div style="position:relative; display:inline-block;">
-          <img src="${src}" style="width:65px; height:65px; object-fit:cover; border-radius:4px; border:1px solid #D6C7B2;" />
-          <span style="position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.6); color:#fff; font-size:10px; padding:1px 4px; border-radius:3px;">#${i+1}</span>
-        </div>
-      `).join('');
-    }
+    event.target.value = '';
+    renderSelectedImagePreviews();
   };
+
+  window.removeSelectedImage = function(index) {
+    selectedImages.splice(index, 1);
+    renderSelectedImagePreviews();
+  };
+
+  function renderSelectedImagePreviews() {
+    const previewContainer = document.getElementById('image-previews-list');
+    if (!previewContainer) return;
+
+    if (selectedImages.length === 0) {
+      previewContainer.innerHTML = '<span style="font-size:12px; color:#888;">No photos selected yet.</span>';
+      return;
+    }
+
+    previewContainer.innerHTML = selectedImages.map((src, i) => `
+      <div style="position:relative; display:inline-block; margin-right:6px; margin-bottom:6px;">
+        <img src="${src}" style="width:65px; height:65px; object-fit:cover; border-radius:4px; border:1px solid #D6C7B2;" />
+        <span style="position:absolute; bottom:2px; left:2px; background:rgba(0,0,0,0.6); color:#fff; font-size:10px; padding:1px 4px; border-radius:3px;">#${i+1}</span>
+        <button type="button" onclick="window.removeSelectedImage(${i})" style="position:absolute; top:-6px; right:-6px; background:#8C1D2F; color:#fff; border:none; border-radius:50%; width:18px; height:18px; font-size:11px; cursor:pointer; display:flex; align-items:center; justify-content:center; padding:0;">×</button>
+      </div>
+    `).join('');
+  }
 
   async function loadFirestoreProducts() {
     try {
@@ -277,10 +285,8 @@ function card(p, idx) {
       document.getElementById('new-pname').value = '';
       document.getElementById('new-pprice').value = '';
       document.getElementById('new-pdesc').value = '';
-      document.getElementById('new-pfiles').value = '';
       selectedImages = [];
-      const previewContainer = document.getElementById('image-previews-list');
-      if (previewContainer) previewContainer.innerHTML = '';
+      renderSelectedImagePreviews();
 
       loadFirestoreProducts();
       renderAdminProductList();
@@ -354,7 +360,7 @@ function card(p, idx) {
             <input type="text" id="new-pcat" placeholder="Category (e.g. Sarees, Kurtis)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; grid-column:1/-1;" />
             
             <div style="grid-column:1/-1; display:flex; flex-direction:column; gap:8px; background:#fff; padding:16px; border-radius:6px; border:1px dashed #D6C7B2;">
-              <label style="font-size:13px; font-weight:bold; color:#4A0E17;">Upload Photos (Select up to 7+ photos together):</label>
+              <label style="font-size:13px; font-weight:bold; color:#4A0E17;">Upload Photos (Click multiple times or select together):</label>
               <input type="file" id="new-pfiles" accept="image/*" multiple onchange="handleMultiImageUpload(event)" style="font-size:13px;" />
               <div id="image-previews-list" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
             </div>
@@ -378,6 +384,7 @@ function card(p, idx) {
         </div>
       `;
       renderAdminProductList();
+      renderSelectedImagePreviews();
     }
   }
 
