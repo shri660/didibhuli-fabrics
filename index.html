@@ -92,21 +92,47 @@ function card(p) {
   `;
 }
 <script>
-// Catalog Card Generator with Direct WhatsApp Enquiry
-function card(p) {
+// Gallery thumbnail navigation helper
+window.changeCardImage = function(imgSrc, cardIdx) {
+  const mainImg = document.getElementById('card-main-img-' + cardIdx);
+  if (mainImg) mainImg.style.backgroundImage = `url('${imgSrc}')`;
+};
+
+// Catalog Card with Multi-Photo Carousel / Gallery & WhatsApp Button
+function card(p, idx) {
+  const images = (Array.isArray(p.images) && p.images.length > 0) ? p.images : [p.img || p.image || 'brand-info.png'];
+  const firstImage = images[0];
+
+  // Generate mini thumbnails if there are 2 or more photos
+  let thumbHtml = '';
+  if (images.length > 1) {
+    thumbHtml = `
+      <div style="display:flex; gap:6px; overflow-x:auto; padding:8px 0; scrollbar-width:thin;">
+        ${images.map((img, i) => `
+          <img src="${img}" 
+               onclick="window.changeCardImage('${img}', ${idx})" 
+               style="width:42px; height:42px; object-fit:cover; border-radius:4px; border:1px solid #D6C7B2; cursor:pointer; flex-shrink:0;" 
+               title="View Photo ${i+1}" />
+        `).join('')}
+      </div>
+    `;
+  }
+
   const waMsg = encodeURIComponent(`Hello Didi Bhuli Fabric House, I am interested in this design: ${p.name} (Price: ₹${p.price}).`);
   const waLink = `https://wa.me/919170174759?text=${waMsg}`;
 
   return `
     <article class="card" style="background:#fff; border:1px solid #E6DEC8; border-radius:6px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
-      <div class="card-img" style="background-image:url('${p.img || 'brand-info.png'}'); height:280px; background-size:cover; background-position:center; position:relative;">
+      <div id="card-main-img-${idx}" class="card-img" style="background-image:url('${firstImage}'); height:320px; background-size:cover; background-position:center; position:relative; transition:background-image 0.3s ease;">
         <span class="badge" style="position:absolute; top:12px; left:12px; background:#4A0E17; color:#FAF7F2; padding:4px 8px; font-size:11px; text-transform:uppercase; letter-spacing:1px; border-radius:3px;">${p.cat || 'Showcase'}</span>
+        ${images.length > 1 ? `<span style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.65); color:#fff; font-size:11px; padding:3px 8px; border-radius:12px;">📷 ${images.length} Photos</span>` : ''}
       </div>
       <div style="padding:16px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
           <span style="font-size:11px; text-transform:uppercase; color:#8C6239; letter-spacing:1px; font-weight:600;">${p.fabric || 'Traditional'} · ${p.work || 'Handcrafted'}</span>
           <h3 style="font-family:'Cormorant Garamond',serif; font-size:20px; margin:6px 0; color:#4A0E17;">${p.name}</h3>
           <p style="font-size:13px; color:#666; margin:0 0 10px 0; line-height:1.4;">${p.description || ''}</p>
+          ${thumbHtml}
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid #F0EAE1;">
           <span style="font-size:18px; font-weight:bold; color:#4A0E17;">₹${Number(p.price).toLocaleString('en-IN')}</span>
@@ -120,7 +146,7 @@ function card(p) {
 }
 </script>
 
-<!-- Firebase SDK & Direct Showcase Integration -->
+<!-- Firebase SDK & Multi-Photo Showcase Integration -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -138,22 +164,57 @@ function card(p) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  let currentImageData = "brand-info.png";
+  let selectedImages = [];
 
-  // Helper to convert selected image file to Base64 data string
-  window.handleImageUpload = function(event) {
-    const file = event.target.files[0];
-    if (file) {
+  // Compression helper so multiple HD photos comfortably fit in Firestore
+  function compressImage(file, maxWidth = 800, quality = 0.7) {
+    return new Promise((resolve) => {
       const reader = new FileReader();
-      reader.onload = function(e) {
-        currentImageData = e.target.result;
-        const preview = document.getElementById('image-preview');
-        if (preview) {
-          preview.src = currentImageData;
-          preview.style.display = 'block';
-        }
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = (maxWidth / width) * height;
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = e.target.result;
       };
       reader.readAsDataURL(file);
+    });
+  }
+
+  // Handle Multi-file Upload (Select up to 7+ photos at once)
+  window.handleMultiImageUpload = async function(event) {
+    const files = Array.from(event.target.files);
+    if (!files.length) return;
+
+    selectedImages = [];
+    const previewContainer = document.getElementById('image-previews-list');
+    if (previewContainer) {
+      previewContainer.innerHTML = '<span style="font-size:12px; color:#666;">Optimizing photos...</span>';
+    }
+
+    for (const file of files) {
+      const compressed = await compressImage(file);
+      selectedImages.push(compressed);
+    }
+
+    if (previewContainer) {
+      previewContainer.innerHTML = selectedImages.map((src, i) => `
+        <div style="position:relative; display:inline-block;">
+          <img src="${src}" style="width:65px; height:65px; object-fit:cover; border-radius:4px; border:1px solid #D6C7B2;" />
+          <span style="position:absolute; bottom:2px; right:2px; background:rgba(0,0,0,0.6); color:#fff; font-size:10px; padding:1px 4px; border-radius:3px;">#${i+1}</span>
+        </div>
+      `).join('');
     }
   };
 
@@ -173,7 +234,7 @@ function card(p) {
             work: data.work || "Handcrafted",
             color: data.color || "Maroon",
             size: data.size || "S · M · L · XL",
-            img: data.image || data.img || "brand-info.png",
+            images: data.images || (data.image ? [data.image] : ['brand-info.png']),
             description: data.description || ""
           });
         });
@@ -182,10 +243,10 @@ function card(p) {
         const featContainer = document.getElementById("featured");
 
         if (prodContainer) {
-          prodContainer.innerHTML = firestoreList.map((p) => card(p)).join("");
+          prodContainer.innerHTML = firestoreList.map((p, i) => card(p, i)).join("");
         }
         if (featContainer) {
-          featContainer.innerHTML = firestoreList.slice(0, 4).map((p) => card(p)).join("");
+          featContainer.innerHTML = firestoreList.slice(0, 4).map((p, i) => card(p, i)).join("");
         }
       }
     } catch (err) {
@@ -200,22 +261,26 @@ function card(p) {
     const category = document.getElementById('new-pcat').value;
     const description = document.getElementById('new-pdesc').value;
 
+    const finalImages = selectedImages.length > 0 ? selectedImages : ['brand-info.png'];
+
     try {
       await addDoc(collection(db, "products"), {
         name,
         price,
         category,
-        image: currentImageData,
+        images: finalImages,
+        image: finalImages[0],
         description,
         available: true
       });
-      alert("Design and photo added to showcase!");
+      alert(`Design published with ${finalImages.length} photo(s)!`);
       document.getElementById('new-pname').value = '';
       document.getElementById('new-pprice').value = '';
       document.getElementById('new-pdesc').value = '';
-      currentImageData = "brand-info.png";
-      const preview = document.getElementById('image-preview');
-      if (preview) preview.style.display = 'none';
+      document.getElementById('new-pfiles').value = '';
+      selectedImages = [];
+      const previewContainer = document.getElementById('image-previews-list');
+      if (previewContainer) previewContainer.innerHTML = '';
 
       loadFirestoreProducts();
       renderAdminProductList();
@@ -231,11 +296,14 @@ function card(p) {
     listContainer.innerHTML = "";
     snap.forEach((d) => {
       const p = d.data();
+      const firstImg = (p.images && p.images[0]) || p.image || 'brand-info.png';
+      const imgCount = (p.images && p.images.length) || 1;
+
       const row = document.createElement("tr");
       row.innerHTML = `
         <td style="padding:10px; border-bottom:1px solid #E6DEC8;">
-          <img src="${p.image || 'brand-info.png'}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; vertical-align:middle; margin-right:8px;" />
-          <strong>${p.name}</strong>
+          <img src="${firstImg}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; vertical-align:middle; margin-right:8px;" />
+          <strong>${p.name}</strong> <span style="font-size:11px; color:#8C6239;">(${imgCount} photos)</span>
         </td>
         <td style="padding:10px; border-bottom:1px solid #E6DEC8; color:#4A0E17; font-weight:bold;">₹${p.price}</td>
         <td style="padding:10px; border-bottom:1px solid #E6DEC8;">${p.category || 'General'}</td>
@@ -247,12 +315,11 @@ function card(p) {
     });
   }
 
-  // Globally attached delete function
   window.handleDeleteProduct = async (id) => {
     if (confirm("Delete this item from showcase?")) {
       try {
         await deleteDoc(doc(db, "products", id));
-        alert("Item removed successfully!");
+        alert("Item removed!");
         loadFirestoreProducts();
         renderAdminProductList();
       } catch (err) {
@@ -277,30 +344,30 @@ function card(p) {
       adminMain.innerHTML = `
         <div style="padding:32px 20px; max-width:850px; margin:40px auto; background:#FAF7F2; border-radius:8px; border:1px solid #E6DEC8; box-shadow:0 4px 20px rgba(0,0,0,0.06);">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #E6DEC8; padding-bottom:16px; margin-bottom:24px;">
-            <h2 style="font-family:'Cormorant Garamond',serif; color:#4A0E17; font-size:28px; margin:0;">Showcase Admin — Manage Items</h2>
+            <h2 style="font-family:'Cormorant Garamond',serif; color:#4A0E17; font-size:28px; margin:0;">Showcase Admin — Multi-Photo Manager</h2>
             <a href="#" onclick="showHomeView(); return false;" style="background:#4A0E17; color:#FAF7F2; padding:8px 16px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:14px;">← Back to Store</a>
           </div>
 
           <form onsubmit="handleAddNewProduct(event)" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <input type="text" id="new-pname" placeholder="Item Name (e.g. Silk Zari Kurti)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
             <input type="number" id="new-pprice" placeholder="Display Price in ₹ (e.g. 1999)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
-            <input type="text" id="new-pcat" placeholder="Category (e.g. Sarees, Kurtis)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
+            <input type="text" id="new-pcat" placeholder="Category (e.g. Sarees, Kurtis)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; grid-column:1/-1;" />
             
-            <div style="display:flex; flex-direction:column; gap:6px;">
-              <label style="font-size:12px; font-weight:bold; color:#4A0E17;">Upload Item Photo:</label>
-              <input type="file" id="new-pfile" accept="image/*" onchange="handleImageUpload(event)" style="font-size:13px;" />
-              <img id="image-preview" src="" style="width:60px; height:60px; object-fit:cover; border-radius:4px; display:none; margin-top:4px;" />
+            <div style="grid-column:1/-1; display:flex; flex-direction:column; gap:8px; background:#fff; padding:16px; border-radius:6px; border:1px dashed #D6C7B2;">
+              <label style="font-size:13px; font-weight:bold; color:#4A0E17;">Upload Photos (Select up to 7+ photos together):</label>
+              <input type="file" id="new-pfiles" accept="image/*" multiple onchange="handleMultiImageUpload(event)" style="font-size:13px;" />
+              <div id="image-previews-list" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
             </div>
 
-            <textarea id="new-pdesc" placeholder="Fabric, work, styling details..." style="grid-column:1/-1; padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; min-height:80px;"></textarea>
-            <button type="submit" style="grid-column:1/-1; background:#4A0E17; color:#FAF7F2; padding:14px; border:none; border-radius:4px; font-weight:bold; font-size:15px; cursor:pointer;">Publish Item with Photo</button>
+            <textarea id="new-pdesc" placeholder="Fabric, work, embroidery & fit details..." style="grid-column:1/-1; padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; min-height:80px;"></textarea>
+            <button type="submit" style="grid-column:1/-1; background:#4A0E17; color:#FAF7F2; padding:14px; border:none; border-radius:4px; font-weight:bold; font-size:15px; cursor:pointer;">Publish Product with Photo Gallery</button>
           </form>
 
           <h3 style="margin-top:36px; color:#4A0E17; font-family:'Cormorant Garamond',serif; font-size:22px;">Current Showcase Items</h3>
           <table style="width:100%; border-collapse:collapse; margin-top:12px; text-align:left; background:#fff; border-radius:6px; overflow:hidden;">
             <thead>
               <tr style="background:#EBE3D5; color:#4A0E17;">
-                <th style="padding:12px;">Item & Photo</th>
+                <th style="padding:12px;">Item & Photos</th>
                 <th style="padding:12px;">Price</th>
                 <th style="padding:12px;">Category</th>
                 <th style="padding:12px;">Action</th>
