@@ -38,15 +38,35 @@
 </header>
 
 <section id="home" class="hero view active">
-  <div class="hero-copy"><div class="eyebrow">Didi Bhuli Fabric House · Rajawala, Dehradun</div><h1>Tradition,<br><i>beautifully</i><br>worn.</h1><p>Curated women's kurtis and traditional silhouettes, selected for everyday elegance, festive moments and timeless Indian style.</p><div class="hero-buttons"><button class="btn primary" onclick="document.getElementById('shop').scrollIntoView()">Shop Kurtis</button><button class="btn outline" onclick="document.getElementById('story').scrollIntoView()">Discover DBFH</button></div></div>
+  <div class="hero-copy"><div class="eyebrow">Didi Bhuli Fabric House · Rajawala, Dehradun</div><h1>Tradition,<br><i>beautifully</i><br>worn.</h1><p>Curated women's traditional silhouettes, selected for everyday elegance, festive moments and timeless Indian style.</p><div class="hero-buttons"><button class="btn primary" onclick="document.getElementById('shop').scrollIntoView()">Shop Kurtis</button><button class="btn outline" onclick="document.getElementById('story').scrollIntoView()">Discover DBFH</button></div></div>
   <div class="hero-art"></div>
 </section>
 
-<section id="new" class="section"><div class="section-head"><div><div class="kicker">01 · Curated collection</div><h2>New arrivals.</h2></div><p>A modern wardrobe rooted in Indian tradition. Every piece is designed to feel special without feeling difficult to wear.</p></div><div class="grid" id="featured"></div></section>
+<section id="new" class="section">
+  <div class="section-head">
+    <div class="kicker">01 · Curated collection</div>
+    <h2>New arrivals.</h2>
+    <p>A modern wardrobe rooted in timeless heritage.</p>
+  </div>
+  <div class="grid" id="new-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:24px;"></div>
+</section>
 
-<section class="banner"><div><div class="kicker">Didi Bhuli Edit</div><h2>Made for your<br>everyday elegance.</h2></div><p>From simple printed kurtis to richly detailed festive pieces, explore silhouettes that move effortlessly from everyday wear to celebrations.</p></section>
+<section class="banner">
+  <div>
+    <div class="kicker">Didi Bhuli Edit</div>
+    <h2>Made for your<br>everyday elegance.</h2>
+  </div>
+  <p>From simple printed kurtis to richly detailed festive sets, handpicked for you.</p>
+</section>
 
-<section id="shop" class="section"><div class="section-head"><div><div class="kicker">02 · Shop</div><h2>Find your kurti.</h2></div><p>Filter by your style, size or price. Every item in this demo is within the ₹500–₹3,000 range you specified.</p></div><div class="grid" id="products"></div></section>
+<section id="shop" class="section">
+  <div class="section-head">
+    <div class="kicker">02 · Showcase Collection</div>
+    <h2>Find your style.</h2>
+    <p>Explore our handcrafted selection.</p>
+  </div>
+  <div class="grid" id="shop-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:24px;"></div>
+</section>
 
 <section id="story" class="story"><div class="story-img"></div><div class="story-copy"><div class="kicker">03 · Our story</div><h2>Where heritage meets a modern wardrobe.</h2><p>Didi Bhuli Fabric House is a women's traditional fashion boutique from Rajawala, Dehradun, built around beautiful kurtis, thoughtful fabrics and accessible elegance.</p><p>The website is designed to grow with the business: new products, photographs, sizes, colours and stock can be managed from the owner dashboard rather than editing website code.</p><button class="btn primary" onclick="openAdmin()">Open Owner Dashboard</button></div></section>
 
