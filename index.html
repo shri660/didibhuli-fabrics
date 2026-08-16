@@ -92,18 +92,16 @@ function card(p) {
   `;
 }
 <script>
-// Gallery thumbnail navigation helper
+// Catalog Card Generator with Multi-Photo Gallery & WhatsApp Enquiry
 window.changeCardImage = function(imgSrc, cardIdx) {
   const mainImg = document.getElementById('card-main-img-' + cardIdx);
   if (mainImg) mainImg.style.backgroundImage = `url('${imgSrc}')`;
 };
 
-// Catalog Card with Multi-Photo Carousel / Gallery & WhatsApp Button
 function card(p, idx) {
   const images = (Array.isArray(p.images) && p.images.length > 0) ? p.images : [p.img || p.image || 'brand-info.png'];
   const firstImage = images[0];
 
-  // Generate mini thumbnails if there are 2 or more photos
   let thumbHtml = '';
   if (images.length > 1) {
     thumbHtml = `
@@ -144,6 +142,8 @@ function card(p, idx) {
     </article>
   `;
 }
+</script>
+
 <!-- Firebase SDK & Multi-Photo Showcase Integration -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -189,7 +189,6 @@ function card(p, idx) {
     });
   }
 
-  // Add photos one by one or in batches without overwriting
   window.handleMultiImageUpload = async function(event) {
     const files = Array.from(event.target.files);
     if (!files.length) return;
@@ -314,7 +313,7 @@ function card(p, idx) {
         <td style="padding:10px; border-bottom:1px solid #E6DEC8; color:#4A0E17; font-weight:bold;">₹${p.price}</td>
         <td style="padding:10px; border-bottom:1px solid #E6DEC8;">${p.category || 'General'}</td>
         <td style="padding:10px; border-bottom:1px solid #E6DEC8;">
-          <button onclick="window.handleDeleteProduct('${d.id}')" style="background:#8C1D2F; color:#fff; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; font-weight:bold;">Delete</button>
+          <button type="button" onclick="window.handleDeleteProduct('${d.id}')" style="background:#8C1D2F; color:#fff; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; font-weight:bold;">Delete</button>
         </td>
       `;
       listContainer.appendChild(row);
@@ -351,7 +350,7 @@ function card(p, idx) {
         <div style="padding:32px 20px; max-width:850px; margin:40px auto; background:#FAF7F2; border-radius:8px; border:1px solid #E6DEC8; box-shadow:0 4px 20px rgba(0,0,0,0.06);">
           <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #E6DEC8; padding-bottom:16px; margin-bottom:24px;">
             <h2 style="font-family:'Cormorant Garamond',serif; color:#4A0E17; font-size:28px; margin:0;">Showcase Admin — Multi-Photo Manager</h2>
-            <a href="#" onclick="showHomeView(); return false;" style="background:#4A0E17; color:#FAF7F2; padding:8px 16px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:14px;">← Back to Store</a>
+            <a href="#" onclick="window.showHomeView(); return false;" style="background:#4A0E17; color:#FAF7F2; padding:8px 16px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:14px;">← Back to Store</a>
           </div>
 
           <form onsubmit="handleAddNewProduct(event)" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
@@ -360,8 +359,8 @@ function card(p, idx) {
             <input type="text" id="new-pcat" placeholder="Category (e.g. Sarees, Kurtis)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; grid-column:1/-1;" />
             
             <div style="grid-column:1/-1; display:flex; flex-direction:column; gap:8px; background:#fff; padding:16px; border-radius:6px; border:1px dashed #D6C7B2;">
-              <label style="font-size:13px; font-weight:bold; color:#4A0E17;">Upload Photos (Click multiple times or select together):</label>
-              <input type="file" id="new-pfiles" accept="image/*" multiple onchange="handleMultiImageUpload(event)" style="font-size:13px;" />
+              <label style="font-size:13px; font-weight:bold; color:#4A0E17;">Upload Photos (Select up to 7+ photos together):</label>
+              <input type="file" id="new-pfiles" accept="image/*" multiple onchange="window.handleMultiImageUpload(event)" style="font-size:13px;" />
               <div id="image-previews-list" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
             </div>
 
