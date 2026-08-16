@@ -42,17 +42,34 @@
   <div class="hero-art"></div>
 </section>
 
-<section id="new" class="section">
+<section id="new" class="section" style="padding: 40px 6vw; display: block !important;">
   <div class="section-head">
     <div class="kicker">01 · Curated collection</div>
-    <h2>New arrivals.</h2>
+    <h2 style="font-family:'Cormorant Garamond',serif; font-size:36px; color:#4A0E17;">New arrivals.</h2>
     <p>A modern wardrobe rooted in timeless heritage.</p>
   </div>
-  <div class="grid" id="new-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:24px;"></div>
+  <div id="new-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:28px; width:100%; min-height:100px;">
+    <p style="color:#888;">Loading collection...</p>
+  </div>
 </section>
 
-<section class="banner">
+<section class="banner" style="display: block !important;">
   <div>
+    <div class="kicker">Didi Bhuli Edit</div>
+    <h2>Made for your<br>everyday elegance.</h2>
+  </div>
+  <p>From simple printed kurtis to richly detailed festive pieces, explore silhouettes that move effortlessly.</p>
+</section>
+
+<section id="shop" class="section" style="padding: 40px 6vw; display: block !important;">
+  <div class="section-head">
+    <div class="kicker">02 · Showcase Collection</div>
+    <h2 style="font-family:'Cormorant Garamond',serif; font-size:36px; color:#4A0E17;">Find your style.</h2>
+  </div>
+  <div id="shop-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:28px; width:100%; min-height:100px;">
+    <p style="color:#888;">Loading showcase...</p>
+  </div>
+</section>
     <div class="kicker">Didi Bhuli Edit</div>
     <h2>Made for your<br>everyday elegance.</h2>
   </div>
@@ -112,18 +129,32 @@ function card(p) {
   `;
 }
 <script>
-// Thumbnail switch helper
 window.changeCardImage = function(imgSrc, cardIdx) {
   const mainImg = document.getElementById('card-main-img-' + cardIdx);
   if (mainImg) mainImg.src = imgSrc;
 };
 
-// Card generator using native <img> tags for reliable photo rendering
-function card(p, idx) {
-  const images = (Array.isArray(p.images) && p.images.length > 0) 
-    ? p.images 
-    : [p.image || p.img || 'brand-info.png'];
-  const firstImage = images[0];
+// Fail-safe card generator
+function createProductCard(p, idx) {
+  const name = p.name || 'Handcrafted Design';
+  const price = Number(p.price) || 0;
+  const category = p.cat || p.category || 'Collection';
+  const description = p.description || '';
+  const fabric = p.fabric || 'Traditional';
+  const work = p.work || 'Handcrafted';
+  
+  // Safe Image Extraction
+  let images = [];
+  if (Array.isArray(p.images) && p.images.length > 0) {
+    images = p.images;
+  } else if (p.image) {
+    images = [p.image];
+  } else if (p.img) {
+    images = [p.img];
+  } else {
+    images = ['brand-info.png'];
+  }
+  const mainPhoto = images[0] || 'brand-info.png';
 
   let thumbHtml = '';
   if (images.length > 1) {
@@ -132,32 +163,32 @@ function card(p, idx) {
         ${images.map((img, i) => `
           <img src="${img}" 
                onclick="window.changeCardImage('${img}', '${idx}')" 
-               style="width:45px; height:45px; object-fit:cover; border-radius:4px; border:1px solid #D6C7B2; cursor:pointer; flex-shrink:0;" 
+               style="width:44px; height:44px; object-fit:cover; border-radius:4px; border:1px solid #D6C7B2; cursor:pointer; flex-shrink:0;" 
                alt="Photo ${i+1}" />
         `).join('')}
       </div>
     `;
   }
 
-  const waMsg = encodeURIComponent(`Hello Didi Bhuli Fabric House, I am interested in this design: ${p.name} (Price: ₹${p.price}).`);
+  const waMsg = encodeURIComponent(`Hello Didi Bhuli Fabric House, I am interested in this design: ${name} (Price: ₹${price}).`);
   const waLink = `https://wa.me/919170174759?text=${waMsg}`;
 
   return `
-    <article class="card" style="background:#fff; border:1px solid #E6DEC8; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 4px 15px rgba(0,0,0,0.05); margin-bottom:20px;">
+    <article class="card" style="background:#fff; border:1px solid #E6DEC8; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 4px 15px rgba(0,0,0,0.06); width:100%;">
       <div style="position:relative; width:100%; height:320px; background:#f4ede4; overflow:hidden;">
-        <img id="card-main-img-${idx}" src="${firstImage}" alt="${p.name}" style="width:100%; height:100%; object-fit:cover; display:block;" />
-        <span style="position:absolute; top:12px; left:12px; background:#4A0E17; color:#FAF7F2; padding:4px 10px; font-size:11px; text-transform:uppercase; letter-spacing:1px; border-radius:4px; font-weight:600;">${p.cat || 'Showcase'}</span>
+        <img id="card-main-img-${idx}" src="${mainPhoto}" alt="${name}" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.src='brand-info.png';" />
+        <span style="position:absolute; top:12px; left:12px; background:#4A0E17; color:#FAF7F2; padding:4px 10px; font-size:11px; text-transform:uppercase; letter-spacing:1px; border-radius:4px; font-weight:600;">${category}</span>
         ${images.length > 1 ? `<span style="position:absolute; bottom:12px; right:12px; background:rgba(0,0,0,0.7); color:#fff; font-size:11px; padding:3px 8px; border-radius:12px;">📷 ${images.length} Photos</span>` : ''}
       </div>
       <div style="padding:16px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
         <div>
-          <span style="font-size:11px; text-transform:uppercase; color:#8C6239; letter-spacing:1px; font-weight:600;">${p.fabric || 'Traditional'} · ${p.work || 'Handcrafted'}</span>
-          <h3 style="font-family:'Cormorant Garamond',serif; font-size:22px; margin:6px 0; color:#4A0E17;">${p.name}</h3>
-          <p style="font-size:13px; color:#666; margin:0; line-height:1.4;">${p.description || ''}</p>
+          <span style="font-size:11px; text-transform:uppercase; color:#8C6239; letter-spacing:1px; font-weight:600;">${fabric} · ${work}</span>
+          <h3 style="font-family:'Cormorant Garamond',serif; font-size:22px; margin:6px 0; color:#4A0E17;">${name}</h3>
+          <p style="font-size:13px; color:#666; margin:0; line-height:1.4;">${description}</p>
           ${thumbHtml}
         </div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; padding-top:12px; border-top:1px solid #F0EAE1;">
-          <span style="font-size:20px; font-weight:bold; color:#4A0E17;">₹${Number(p.price).toLocaleString('en-IN')}</span>
+          <span style="font-size:20px; font-weight:bold; color:#4A0E17;">₹${price.toLocaleString('en-IN')}</span>
           <a href="${waLink}" target="_blank" style="background:#25D366; color:#fff; text-decoration:none; padding:9px 16px; border-radius:4px; font-size:12px; font-weight:bold; letter-spacing:0.5px; display:inline-flex; align-items:center;">
             Enquire Now
           </a>
@@ -168,7 +199,7 @@ function card(p, idx) {
 }
 </script>
 
-<!-- Firebase SDK & Multi-Photo Showcase Integration -->
+<!-- Firebase SDK & Live Integration -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -188,8 +219,7 @@ function card(p, idx) {
 
   let selectedImages = [];
 
-  // Compression helper to prevent Firestore size rejects
-  function compressImage(file, maxWidth = 650, quality = 0.6) {
+  function compressImage(file, maxWidth = 600, quality = 0.6) {
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -222,7 +252,6 @@ function card(p, idx) {
       const compressed = await compressImage(file);
       selectedImages.push(compressed);
     }
-
     event.target.value = '';
     renderSelectedImagePreviews();
   };
@@ -237,7 +266,7 @@ function card(p, idx) {
     if (!previewContainer) return;
 
     if (selectedImages.length === 0) {
-      previewContainer.innerHTML = '<span style="font-size:12px; color:#888;">No photos selected yet.</span>';
+      previewContainer.innerHTML = '<span style="font-size:12px; color:#888;">No photos selected.</span>';
       return;
     }
 
@@ -250,62 +279,52 @@ function card(p, idx) {
     `).join('');
   }
 
+  // Live Products Renderer
   async function loadFirestoreProducts() {
+    const newGrid = document.getElementById('new-grid');
+    const shopGrid = document.getElementById('shop-grid');
+
     try {
       const querySnapshot = await getDocs(collection(db, "products"));
       const firestoreList = [];
       querySnapshot.forEach((docSnap) => {
-        const data = docSnap.data();
+        const d = docSnap.data();
         firestoreList.push({
           id: docSnap.id,
-          name: data.name || "Untitled",
-          price: Number(data.price) || 0,
-          cat: data.category || "Kurtis",
-          fabric: data.fabric || "Traditional",
-          work: data.work || "Handcrafted",
-          color: data.color || "Maroon",
-          size: data.size || "S · M · L · XL",
-          images: data.images || (data.image ? [data.image] : ['brand-info.png']),
-          description: data.description || ""
+          name: d.name || "Handcrafted Kurti",
+          price: Number(d.price) || 0,
+          cat: d.category || "General",
+          fabric: d.fabric || "Traditional",
+          work: d.work || "Handcrafted",
+          images: d.images || (d.image ? [d.image] : ['brand-info.png']),
+          description: d.description || ""
         });
       });
 
-      // 1. Render in New Arrivals
-      let newGrid = document.getElementById('new-grid');
-      if (!newGrid) {
-        const newSec = document.getElementById('new');
-        if (newSec) {
-          newGrid = document.createElement('div');
-          newGrid.id = 'new-grid';
-          newGrid.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:28px; width:100%;';
-          newSec.appendChild(newGrid);
-        }
-      }
-      if (newGrid) {
-        newGrid.innerHTML = firestoreList.map((p, i) => card(p, 'new-' + i)).join('');
+      if (firestoreList.length === 0) {
+        if (newGrid) newGrid.innerHTML = '<div style="grid-column:1/-1; padding:30px; text-align:center; background:#faf7f2; border:1px dashed #d6c7b2; border-radius:6px;">No products published yet. Click <strong>ADMIN</strong> in the top menu to add your first piece!</div>';
+        if (shopGrid) shopGrid.innerHTML = '<div style="grid-column:1/-1; padding:30px; text-align:center; background:#faf7f2; border:1px dashed #d6c7b2; border-radius:6px;">No items in showcase yet.</div>';
+        return;
       }
 
-      // 2. Render in Showcase Collection
-      let shopGrid = document.getElementById('shop-grid');
-      if (!shopGrid) {
-        const shopSec = document.getElementById('shop');
-        if (shopSec) {
-          shopGrid = document.createElement('div');
-          shopGrid.id = 'shop-grid';
-          shopGrid.style.cssText = 'display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:24px; margin-top:28px; width:100%;';
-          shopSec.appendChild(shopGrid);
-        }
-      }
-      if (shopGrid) {
-        shopGrid.innerHTML = firestoreList.map((p, i) => card(p, 'shop-' + i)).join('');
-      }
+      const cardsHtmlNew = firestoreList.map((p, i) => createProductCard(p, 'new-' + i)).join('');
+      const cardsHtmlShop = firestoreList.map((p, i) => createProductCard(p, 'shop-' + i)).join('');
+
+      if (newGrid) newGrid.innerHTML = cardsHtmlNew;
+      if (shopGrid) shopGrid.innerHTML = cardsHtmlShop;
+
     } catch (err) {
-      console.error("Firestore loading error:", err);
+      console.error("Firestore Loading Error:", err);
+      if (newGrid) newGrid.innerHTML = `<div style="color:red; padding:20px; border:1px solid red; border-radius:4px; grid-column:1/-1;">Error connecting to Firestore: ${err.message}. Please check your Firebase Rules.</div>`;
     }
   }
 
+  // Publish New Product
   window.handleAddNewProduct = async (e) => {
     e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.innerText = "Publishing..."; }
+
     const name = document.getElementById('new-pname').value;
     const price = Number(document.getElementById('new-pprice').value);
     const category = document.getElementById('new-pcat').value;
@@ -321,9 +340,11 @@ function card(p, idx) {
         images: finalImages,
         image: finalImages[0],
         description,
-        available: true
+        available: true,
+        createdAt: new Date()
       });
-      alert(`Published with ${finalImages.length} photo(s)!`);
+      alert(`Success! Published "${name}" with ${finalImages.length} photo(s).`);
+      
       document.getElementById('new-pname').value = '';
       document.getElementById('new-pprice').value = '';
       document.getElementById('new-pdesc').value = '';
@@ -333,41 +354,47 @@ function card(p, idx) {
       await loadFirestoreProducts();
       await renderAdminProductList();
     } catch (err) {
-      alert("Error adding item: " + err.message);
+      alert("Publish Failed: " + err.message);
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerText = "Publish Product with Photo Gallery"; }
     }
   };
 
   async function renderAdminProductList() {
     const listContainer = document.getElementById('admin-product-table-body');
     if (!listContainer) return;
-    const snap = await getDocs(collection(db, "products"));
-    listContainer.innerHTML = "";
-    snap.forEach((d) => {
-      const p = d.data();
-      const firstImg = (p.images && p.images[0]) || p.image || 'brand-info.png';
-      const imgCount = (p.images && p.images.length) || 1;
+    try {
+      const snap = await getDocs(collection(db, "products"));
+      listContainer.innerHTML = "";
+      snap.forEach((d) => {
+        const p = d.data();
+        const firstImg = (p.images && p.images[0]) || p.image || 'brand-info.png';
+        const imgCount = (p.images && p.images.length) || 1;
 
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td style="padding:10px; border-bottom:1px solid #E6DEC8;">
-          <img src="${firstImg}" style="width:45px; height:45px; object-fit:cover; border-radius:4px; vertical-align:middle; margin-right:8px;" />
-          <strong>${p.name}</strong> <span style="font-size:11px; color:#8C6239;">(${imgCount} photos)</span>
-        </td>
-        <td style="padding:10px; border-bottom:1px solid #E6DEC8; color:#4A0E17; font-weight:bold;">₹${p.price}</td>
-        <td style="padding:10px; border-bottom:1px solid #E6DEC8;">${p.category || 'General'}</td>
-        <td style="padding:10px; border-bottom:1px solid #E6DEC8;">
-          <button type="button" onclick="window.handleDeleteProduct('${d.id}')" style="background:#8C1D2F; color:#fff; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; font-weight:bold;">Delete</button>
-        </td>
-      `;
-      listContainer.appendChild(row);
-    });
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td style="padding:10px; border-bottom:1px solid #E6DEC8;">
+            <img src="${firstImg}" style="width:45px; height:45px; object-fit:cover; border-radius:4px; vertical-align:middle; margin-right:8px;" onerror="this.src='brand-info.png';" />
+            <strong>${p.name}</strong> <span style="font-size:11px; color:#8C6239;">(${imgCount} photos)</span>
+          </td>
+          <td style="padding:10px; border-bottom:1px solid #E6DEC8; color:#4A0E17; font-weight:bold;">₹${p.price}</td>
+          <td style="padding:10px; border-bottom:1px solid #E6DEC8;">${p.category || 'General'}</td>
+          <td style="padding:10px; border-bottom:1px solid #E6DEC8;">
+            <button type="button" onclick="window.handleDeleteProduct('${d.id}')" style="background:#8C1D2F; color:#fff; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; font-weight:bold;">Delete</button>
+          </td>
+        `;
+        listContainer.appendChild(row);
+      });
+    } catch (e) {
+      console.error("Admin list error:", e);
+    }
   }
 
   window.handleDeleteProduct = async (id) => {
     if (confirm("Delete this item from showcase?")) {
       try {
         await deleteDoc(doc(db, "products", id));
-        alert("Item removed!");
+        alert("Item deleted!");
         await loadFirestoreProducts();
         await renderAdminProductList();
       } catch (err) {
@@ -396,13 +423,13 @@ function card(p, idx) {
             <a href="#" onclick="window.showHomeView(); return false;" style="background:#4A0E17; color:#FAF7F2; padding:8px 16px; text-decoration:none; border-radius:4px; font-weight:bold; font-size:14px;">← Back to Store</a>
           </div>
 
-          <form onsubmit="handleAddNewProduct(event)" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <form onsubmit="window.handleAddNewProduct(event)" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
             <input type="text" id="new-pname" placeholder="Item Name (e.g. Silk Zari Kurti)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
             <input type="number" id="new-pprice" placeholder="Display Price in ₹ (e.g. 1999)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
             <input type="text" id="new-pcat" placeholder="Category (e.g. Sarees, Kurtis)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; grid-column:1/-1;" />
             
             <div style="grid-column:1/-1; display:flex; flex-direction:column; gap:8px; background:#fff; padding:16px; border-radius:6px; border:1px dashed #D6C7B2;">
-              <label style="font-size:13px; font-weight:bold; color:#4A0E17;">Upload Photos (Select multiple or add one by one):</label>
+              <label style="font-size:13px; font-weight:bold; color:#4A0E17;">Upload Photos (Choose multiple or add one by one):</label>
               <input type="file" id="new-pfiles" accept="image/*" multiple onchange="window.handleMultiImageUpload(event)" style="font-size:13px;" />
               <div id="image-previews-list" style="display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;"></div>
             </div>
@@ -441,10 +468,12 @@ function card(p, idx) {
       homeSec.classList.add('active');
       homeSec.style.display = 'block';
     }
+    window.location.hash = '';
+    loadFirestoreProducts();
   };
 
   window.openAdmin = function() {
-    window.location.hash = '#admin';
+    window.location.hash = 'admin';
     showAdminView();
     window.scrollTo(0, 0);
   };
