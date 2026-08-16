@@ -91,6 +91,33 @@ function card(p) {
     </article>
   `;
 }
+<script>
+// Catalog Card Generator with Direct WhatsApp Enquiry
+function card(p) {
+  const waMsg = encodeURIComponent(`Hello Didi Bhuli Fabric House, I am interested in this design: ${p.name} (Price: ₹${p.price}).`);
+  const waLink = `https://wa.me/919170174759?text=${waMsg}`;
+
+  return `
+    <article class="card" style="background:#fff; border:1px solid #E6DEC8; border-radius:6px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 2px 10px rgba(0,0,0,0.03);">
+      <div class="card-img" style="background-image:url('${p.img || 'brand-info.png'}'); height:280px; background-size:cover; background-position:center; position:relative;">
+        <span class="badge" style="position:absolute; top:12px; left:12px; background:#4A0E17; color:#FAF7F2; padding:4px 8px; font-size:11px; text-transform:uppercase; letter-spacing:1px; border-radius:3px;">${p.cat || 'Showcase'}</span>
+      </div>
+      <div style="padding:16px; flex:1; display:flex; flex-direction:column; justify-content:space-between;">
+        <div>
+          <span style="font-size:11px; text-transform:uppercase; color:#8C6239; letter-spacing:1px; font-weight:600;">${p.fabric || 'Traditional'} · ${p.work || 'Handcrafted'}</span>
+          <h3 style="font-family:'Cormorant Garamond',serif; font-size:20px; margin:6px 0; color:#4A0E17;">${p.name}</h3>
+          <p style="font-size:13px; color:#666; margin:0 0 10px 0; line-height:1.4;">${p.description || ''}</p>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; padding-top:12px; border-top:1px solid #F0EAE1;">
+          <span style="font-size:18px; font-weight:bold; color:#4A0E17;">₹${Number(p.price).toLocaleString('en-IN')}</span>
+          <a href="${waLink}" target="_blank" style="background:#25D366; color:#fff; text-decoration:none; padding:8px 14px; border-radius:4px; font-size:12px; font-weight:bold; letter-spacing:0.5px;">
+            Enquire Now
+          </a>
+        </div>
+      </div>
+    </article>
+  `;
+}
 </script>
 
 <!-- Firebase SDK & Direct Showcase Integration -->
@@ -111,6 +138,25 @@ function card(p) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  let currentImageData = "brand-info.png";
+
+  // Helper to convert selected image file to Base64 data string
+  window.handleImageUpload = function(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        currentImageData = e.target.result;
+        const preview = document.getElementById('image-preview');
+        if (preview) {
+          preview.src = currentImageData;
+          preview.style.display = 'block';
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   async function loadFirestoreProducts() {
     try {
       const querySnapshot = await getDocs(collection(db, "products"));
@@ -127,7 +173,7 @@ function card(p) {
             work: data.work || "Handcrafted",
             color: data.color || "Maroon",
             size: data.size || "S · M · L · XL",
-            img: data.img || data.image || "brand-info.png",
+            img: data.image || data.img || "brand-info.png",
             description: data.description || ""
           });
         });
@@ -152,7 +198,6 @@ function card(p) {
     const name = document.getElementById('new-pname').value;
     const price = Number(document.getElementById('new-pprice').value);
     const category = document.getElementById('new-pcat').value;
-    const img = document.getElementById('new-pimg').value || 'brand-info.png';
     const description = document.getElementById('new-pdesc').value;
 
     try {
@@ -160,14 +205,18 @@ function card(p) {
         name,
         price,
         category,
-        image: img,
+        image: currentImageData,
         description,
         available: true
       });
-      alert("Design added to showcase!");
+      alert("Design and photo added to showcase!");
       document.getElementById('new-pname').value = '';
       document.getElementById('new-pprice').value = '';
       document.getElementById('new-pdesc').value = '';
+      currentImageData = "brand-info.png";
+      const preview = document.getElementById('image-preview');
+      if (preview) preview.style.display = 'none';
+
       loadFirestoreProducts();
       renderAdminProductList();
     } catch (err) {
@@ -184,23 +233,31 @@ function card(p) {
       const p = d.data();
       const row = document.createElement("tr");
       row.innerHTML = `
-        <td style="padding:10px; border-bottom:1px solid #E6DEC8; font-weight:500;">${p.name}</td>
+        <td style="padding:10px; border-bottom:1px solid #E6DEC8;">
+          <img src="${p.image || 'brand-info.png'}" style="width:40px; height:40px; object-fit:cover; border-radius:4px; vertical-align:middle; margin-right:8px;" />
+          <strong>${p.name}</strong>
+        </td>
         <td style="padding:10px; border-bottom:1px solid #E6DEC8; color:#4A0E17; font-weight:bold;">₹${p.price}</td>
         <td style="padding:10px; border-bottom:1px solid #E6DEC8;">${p.category || 'General'}</td>
         <td style="padding:10px; border-bottom:1px solid #E6DEC8;">
-          <button onclick="handleDeleteProduct('${d.id}')" style="background:#8C1D2F; color:#fff; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; font-weight:bold;">Delete</button>
+          <button onclick="window.handleDeleteProduct('${d.id}')" style="background:#8C1D2F; color:#fff; border:none; padding:6px 12px; cursor:pointer; border-radius:4px; font-weight:bold;">Delete</button>
         </td>
       `;
       listContainer.appendChild(row);
     });
   }
 
+  // Globally attached delete function
   window.handleDeleteProduct = async (id) => {
     if (confirm("Delete this item from showcase?")) {
-      await deleteDoc(doc(db, "products", id));
-      alert("Item removed!");
-      loadFirestoreProducts();
-      renderAdminProductList();
+      try {
+        await deleteDoc(doc(db, "products", id));
+        alert("Item removed successfully!");
+        loadFirestoreProducts();
+        renderAdminProductList();
+      } catch (err) {
+        alert("Delete failed: " + err.message);
+      }
     }
   };
 
@@ -228,16 +285,22 @@ function card(p) {
             <input type="text" id="new-pname" placeholder="Item Name (e.g. Silk Zari Kurti)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
             <input type="number" id="new-pprice" placeholder="Display Price in ₹ (e.g. 1999)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
             <input type="text" id="new-pcat" placeholder="Category (e.g. Sarees, Kurtis)" required style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
-            <input type="text" id="new-pimg" placeholder="Image URL / filename (default: brand-info.png)" style="padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px;" />
+            
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <label style="font-size:12px; font-weight:bold; color:#4A0E17;">Upload Item Photo:</label>
+              <input type="file" id="new-pfile" accept="image/*" onchange="handleImageUpload(event)" style="font-size:13px;" />
+              <img id="image-preview" src="" style="width:60px; height:60px; object-fit:cover; border-radius:4px; display:none; margin-top:4px;" />
+            </div>
+
             <textarea id="new-pdesc" placeholder="Fabric, work, styling details..." style="grid-column:1/-1; padding:12px; border:1px solid #D6C7B2; border-radius:4px; font-size:14px; min-height:80px;"></textarea>
-            <button type="submit" style="grid-column:1/-1; background:#4A0E17; color:#FAF7F2; padding:14px; border:none; border-radius:4px; font-weight:bold; font-size:15px; cursor:pointer;">Publish Item</button>
+            <button type="submit" style="grid-column:1/-1; background:#4A0E17; color:#FAF7F2; padding:14px; border:none; border-radius:4px; font-weight:bold; font-size:15px; cursor:pointer;">Publish Item with Photo</button>
           </form>
 
           <h3 style="margin-top:36px; color:#4A0E17; font-family:'Cormorant Garamond',serif; font-size:22px;">Current Showcase Items</h3>
           <table style="width:100%; border-collapse:collapse; margin-top:12px; text-align:left; background:#fff; border-radius:6px; overflow:hidden;">
             <thead>
               <tr style="background:#EBE3D5; color:#4A0E17;">
-                <th style="padding:12px;">Name</th>
+                <th style="padding:12px;">Item & Photo</th>
                 <th style="padding:12px;">Price</th>
                 <th style="padding:12px;">Category</th>
                 <th style="padding:12px;">Action</th>
