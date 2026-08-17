@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel — Didi Bhuli Fabric House</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --maroon: #4A0E17;
+      --gold: #8C6239;
+      --bg: #FAF7F2;
+      --border: #E6DEC8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      padding: 40px 20px;
+      color: #333;
+    }
+    .admin-container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 32px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    .header h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 30px;
+      color: var(--maroon);
+    }
+    .back-btn {
+      background: var(--maroon);
+      color: #fff;
+      padding: 8px 16px;
+      text-decoration: none;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    input, textarea {
+      padding: 12px;
+      border: 1px solid #D6C7B2;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    textarea {
+      grid-column: 1 / -1;
+      min-height: 80px;
+      resize: vertical;
+    }
+    .full-width { grid-column: 1 / -1; }
+    .upload-box {
+      border: 2px dashed #D6C7B2;
+      padding: 16px;
+      border-radius: 6px;
+      background: #FAF7F2;
+    }
+    .upload-box label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--maroon);
+      display: block;
+      margin-bottom: 8px;
+    }
+    #previews {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    .thumb-wrap {
+      position: relative;
+      display: inline-block;
+    }
+    .thumb-wrap img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    .del-thumb {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #8C1D2F;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .submit-btn {
+      grid-column: 1 / -1;
+      background: var(--maroon);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 30px;
+      background: #fff;
+    }
+    th {
+      background: #EBE3D5;
+      color: var(--maroon);
+      padding: 12px;
+      text-align: left;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    .btn-delete {
+      background: #8C1D2F;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-container">
+    <div class="header">
+      <h1>Showcase Admin Panel</h1>
+      <a href="index.html" class="back-btn">← Back to Storefront</a>
+    </div>
+
+    <!-- Product Upload Form -->
+    <form id="product-form" class="form-grid">
+      <input type="text" id="p-name" placeholder="Item Name (e.g. Silk Zari Kurti)" required />
+      <input type="number" id="p-price" placeholder="Price in ₹ (e.g. 1499)" required />
+      <input type="text" id="p-cat" class="full-width" placeholder="Category (e.g. Sarees, Kurtis, Suits)" required />
+      
+      <div class="full-width upload-box">
+        <label>Upload Photos (Add up to 7+ photos):</label>
+        <input type="file" id="p-files" accept="image/*" multiple />
+        <div id="previews"></div>
+      </div>
+
+      <textarea id="p-desc" placeholder="Details (fabric, embroidery, fit, sizes)..."></textarea>
+      <button type="submit" id="submit-btn" class="submit-btn">Publish to Website</button>
+    </form>
+
+    <!-- Product Management Table -->
+    <h2 style="font-family:'Cormorant Garamond',serif; color:var(--maroon); font-size:24px; margin-top:36px;">Currently Published Items</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Item & Photos</th>
+          <th>Price</th>
+          <th>Category</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="4" style="text-align:center;">Loading products...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDxxOB3FTRf01tg9fL2aAHLZ7YDz3TUFeg",
+      authDomain: "didibhuli-fabrics.firebaseapp.com",
+      projectId: "didibhuli-fabrics",
+      storageBucket: "didibhuli-fabrics.firebasestorage.app",
+      messagingSenderId: "184293608042",
+      appId: "1:184293608042:web:d6b2a3e9f90cee3b295813",
+      measurementId: "G-22TT85ZW6D"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    let selectedImages = [];
+
+    // Image Compression
+    function compressImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let width = img.width;
+            let height = img.height;
+            const maxDimension = 650;
+            if (width > height && width > maxDimension) {
+              height = (maxDimension / width) * height;
+              width = maxDimension;
+            } else if (height > maxDimension) {
+              width = (maxDimension / height) * width;
+              height = maxDimension;
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.65));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    document.getElementById('p-files').addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      for (const file of files) {
+        const base64 = await compressImage(file);
+        selectedImages.push(base64);
+      }
+      e.target.value = '';
+      renderPreviews();
+    });
+
+    window.removeImage = (idx) => {
+      selectedImages.splice(idx, 1);
+      renderPreviews();
+    };
+
+    function renderPreviews() {
+      const container = document.getElementById('previews');
+      if (!selectedImages.length) {
+        container.innerHTML = '<span style="font-size:12px; color:#888;">No photos added yet.</span>';
+        return;
+      }
+      container.innerHTML = selectedImages.map((src, i) => `
+        <div class="thumb-wrap">
+          <img src="${src}" />
+          <button type="button" class="del-thumb" onclick="window.removeImage(${i})">×</button>
+        </div>
+      `).join('');
+    }
+
+    // Load Products
+    async function loadProducts() {
+      const tbody = document.getElementById('table-body');
+      try {
+        const snap = await getDocs(collection(db, "products"));
+        if (snap.empty) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;">No products published yet.</td></tr>`;
+          return;
+        }
+        tbody.innerHTML = snap.docs.map(docSnap => {
+          const p = docSnap.data();
+          const firstImg = (p.images && p.images[0]) || p.image || 'brand-info.png';
+          const count = (p.images && p.images.length) || 1;
+          return `
+            <tr>
+              <td>
+                <img src="${firstImg}" style="width:44px; height:44px; object-fit:cover; border-radius:4px; vertical-align:middle; margin-right:8px;" />
+                <strong>${p.name}</strong> <span style="font-size:11px; color:#8C6239;">(${count} photos)</span>
+              </td>
+              <td style="color:var(--maroon); font-weight:bold;">₹${p.price}</td>
+              <td>${p.category || 'General'}</td>
+              <td>
+                <button class="btn-delete" onclick="window.deleteProduct('${docSnap.id}')">Delete</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="4" style="color:red;">Error: ${err.message}</td></tr>`;
+      }
+    }
+
+    // Publish Form
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.innerText = 'Publishing...';
+
+      const name = document.getElementById('p-name').value;
+      const price = Number(document.getElementById('p-price').value);
+      const category = document.getElementById('p-cat').value;
+      const description = document.getElementById('p-desc').value;
+      const images = selectedImages.length > 0 ? selectedImages : ['brand-info.png'];
+
+      try {
+        await addDoc(collection(db, "products"), {
+          name,
+          price,
+          category,
+          images,
+          image: images[0],
+          description,
+          createdAt: new Date()
+        });
+        alert(`Published "${name}"!`);
+        document.getElementById('product-form').reset();
+        selectedImages = [];
+        renderPreviews();
+        loadProducts();
+      } catch (err) {
+        alert("Publish Failed: " + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'Publish to Website';
+      }
+    });
+
+    // Delete
+    window.deleteProduct = async (id) => {
+      if (confirm("Delete this item permanently?")) {
+        try {
+          await deleteDoc(doc(db, "products", id));
+          loadProducts();
+        } catch (err) {
+          alert("Delete failed: " + err.message);
+        }
+      }
+    };
+
+    loadProducts();
+  </script>
+</body>
+</html>
